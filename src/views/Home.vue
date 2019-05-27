@@ -19,9 +19,10 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { Model } from "survey-vue";
+import { Model, CustomWidgetCollection } from "survey-vue";
 import showdown from "showdown";
-
+//@ts-ignore
+import * as widgets from "surveyjs-widgets";
 import AssessmentTool from "@/components/AssessmentTool.vue"; // @ is an alias to /src
 import Score from "@/components/Score.vue";
 import ActionButtonBar from "@/components/ActionButtonBar.vue";
@@ -53,6 +54,8 @@ export default class Home extends Vue {
   }
 
   created() {
+    this.Survey.CustomWidgetCollection = new CustomWidgetCollection();
+    widgets.select2(this.Survey);
     this.Survey.onComplete.add(result => {
       this.$store.commit("updateResult", result);
     });

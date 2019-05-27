@@ -46,6 +46,7 @@
                         },
                         {
                             "type": "dropdown",
+                            "renderAs": "select2",
                             "name": "projectDetailsDepartment-NS",
                             "title": {
                                 "default": "Department",

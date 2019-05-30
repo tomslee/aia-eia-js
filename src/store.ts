@@ -20,16 +20,15 @@ const vuexLocal = new VuexPersistence({
   })
 });
 
-function addItemsInArray(val: any[]) {
-  let total = 0;
-  val.forEach(item => {
+function sumItemsInArray(val: any[]) {
+  return _.sumBy(val, item => {
     if (typeof item === "number") {
-      total = total + item;
+      return item;
     } else if (typeof item === "string") {
-      total = total + parseEmbeddedValue(item);
+      return parseEmbeddedValue(item);
     }
+    return 0;
   });
-  return total;
 }
 
 function hasScore(question: IQuestion): boolean {
@@ -61,7 +60,7 @@ function getValue(val: any) {
   }
 
   if (Array.isArray(val)) {
-    return addItemsInArray(val);
+    return sumItemsInArray(val);
   }
 
   if (typeof val === "string") {

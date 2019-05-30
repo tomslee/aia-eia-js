@@ -123,63 +123,81 @@ function getMaxScoreForQuestion(question: QuestionSelectBase): number {
   return maxScore;
 }
 
+import Score from "@/interfaces/Score";
+
+function getLevel(total: number, rawRiskScore: Score): number {
+  const threshold1 = 0.25;
+  const threshold2 = 0.5;
+  const threshold3 = 0.75;
+  if (total <= rawRiskScore.max * threshold1) {
+    return 1;
+  } else if (
+    total > rawRiskScore.max * threshold1 &&
+    total <= rawRiskScore.max * threshold2
+  ) {
+    return 2;
+  } else if (
+    total > rawRiskScore.max * threshold2 &&
+    total <= rawRiskScore.max * threshold3
+  ) {
+    return 3;
+  } else {
+    return 4;
+  }
+}
+
+function getTotal(mitigationScore: Score, rawRiskScore: Score) {
+  const percentage = 0.8;
+  const deduction = 0.15;
+
+  //maxMitigationScore is divided by 2 because of Design/Implementation fork
+  if (mitigationScore.actual >= percentage * (mitigationScore.max / 2)) {
+    return Math.round((1 - deduction) * rawRiskScore.actual);
+  }
+
+  return rawRiskScore.actual;
+}
+
 function calculateFinalScore(
   survey: SurveyModel,
   questionNames: string[]
 ): number[] {
-  let rawRiskScore = 0;
-  let maxRawRiskScore = 0;
-  let maxMitigationScore = 0;
-  let mitigationScore = 0;
+  const rawRiskScore: Score = {
+    actual: 0,
+    max: 0
+  };
+
+  const mitigationScore: Score = {
+    actual: 0,
+    max: 0
+  };
 
   questionNames.forEach(name => {
-    const currentQuestion = survey.getQuestionByName(name);
+    const currentQuestion: QuestionSelectBase = survey.getQuestionByName(
+      name
+    ) as QuestionSelectBase;
+
+    const calculateScore = (score: Score) => {
+      score.actual += getValue(survey.data[name]);
+      score.max += getMaxScoreForQuestion(currentQuestion);
+    };
+
     const currentQuestionType = getScoreType(currentQuestion);
 
     if (currentQuestionType === 2) {
-      rawRiskScore += getValue(survey.data[name]);
-      maxRawRiskScore += getMaxScoreForQuestion(
-        currentQuestion as QuestionSelectBase
-      );
+      calculateScore(rawRiskScore);
     } else if (currentQuestionType === 3) {
-      mitigationScore += getValue(survey.data[name]);
-      maxMitigationScore += getMaxScoreForQuestion(
-        currentQuestion as QuestionSelectBase
-      );
+      calculateScore(mitigationScore);
     }
   });
 
-  let total = 0;
-  const percentage = 0.8;
-  const deduction = 0.15;
-  //maxMitigationScore is divided by 2 because of Design/Implementation fork
-  if (mitigationScore >= percentage * (maxMitigationScore / 2)) {
-    total = Math.round((1 - deduction) * rawRiskScore);
-  } else {
-    total = rawRiskScore;
-  }
-
-  let level = 0;
-  const threshold1 = 0.25;
-  const threshold2 = 0.5;
-  const threshold3 = 0.75;
-  if (total <= maxRawRiskScore * threshold1) {
-    level = 1;
-  } else if (
-    total > maxRawRiskScore * threshold1 &&
-    total <= maxRawRiskScore * threshold2
-  ) {
-    level = 2;
-  } else if (
-    total > maxRawRiskScore * threshold2 &&
-    total <= maxRawRiskScore * threshold3
-  ) {
-    level = 3;
-  } else {
-    level = 4;
-  }
-
-  return [rawRiskScore, mitigationScore, total, level];
+  const total = getTotal(mitigationScore, rawRiskScore);
+  return [
+    rawRiskScore.actual,
+    mitigationScore.actual,
+    total,
+    getLevel(total, rawRiskScore)
+  ];
 }
 
 const store: StoreOptions<RootState> = {

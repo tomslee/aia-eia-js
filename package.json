@@ -31,6 +31,7 @@
     "vuex-persist": "1.8.0"
   },
   "devDependencies": {
+    "lodash": "^4.17.11",
     "@types/jest": "^23.1.4",
     "@vue/cli-plugin-babel": "^3.5.0",
     "@vue/cli-plugin-e2e-cypress": "^3.5.1",

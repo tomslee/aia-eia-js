@@ -40,11 +40,10 @@ function hasScore(question: IQuestion): boolean {
 }
 
 function parseEmbeddedValue(val: String): number {
-  var lastHyphenIdx = val.lastIndexOf("-");
+  const lastHyphenIdx = val.lastIndexOf("-");
   if (lastHyphenIdx !== -1) {
     // Suffix after last "-" could be a number.
-    var possibleValue = val.substr(lastHyphenIdx + 1);
-    var value = Number(possibleValue);
+    const value = Number(val.substr(lastHyphenIdx + 1));
     return isNaN(value) ? 0 : value;
   }
 
@@ -87,41 +86,41 @@ function getScoreTypeHelper(name: String): Number {
 }
 
 function getScoreType(question: IQuestion): Number {
-  var result = getScoreTypeHelper(question.name);
+  const result = getScoreTypeHelper(question.name);
 
   if (result > 0) {
     return result;
   }
 
-  result = getScoreTypeHelper(question.parent.name);
+  const parentResult = getScoreTypeHelper(question.parent.name);
 
-  if (result == 0) {
+  if (parentResult == 0) {
     // Treat at no score.
     return 1;
   }
 
-  return result;
+  return parentResult;
 }
 
 function getMaxScoreForQuestion(question: QuestionSelectBase): number {
-  var questionType = question.getType();
-  var max = 0;
-  var value = 0;
+  const questionType = question.getType();
+  let maxScore = 0;
+  let value = 0;
   if (questionType == "radiogroup" || questionType == "dropdown") {
     question.choices.forEach(item => {
       value = getValue(item.itemValue);
-      if (max < value) {
-        max = value;
+      if (maxScore < value) {
+        maxScore = value;
       }
     });
   } else if (questionType == "checkbox") {
     question.choices.forEach(item => {
       value = getValue(item.itemValue);
-      max += value;
+      maxScore += value;
     });
   }
 
-  return max;
+  return maxScore;
 }
 
 function calculateFinalScore(
@@ -132,31 +131,27 @@ function calculateFinalScore(
   let maxRawRiskScore = 0;
   let maxMitigationScore = 0;
   let mitigationScore = 0;
-  let total = 0;
-  let percentage = 0.8;
-  let deduction = 0.15;
-  let level = 0;
-  let threshold1 = 0.25;
-  let threshold2 = 0.5;
-  let threshold3 = 0.75;
 
   questionNames.forEach(name => {
-    var currentQuestion = survey.getQuestionByName(name);
-    var currentQuestionType = getScoreType(currentQuestion);
+    const currentQuestion = survey.getQuestionByName(name);
+    const currentQuestionType = getScoreType(currentQuestion);
 
     if (currentQuestionType === 2) {
       rawRiskScore += getValue(survey.data[name]);
-      maxRawRiskScore += getMaxScoreForQuestion(<QuestionSelectBase>(
-        currentQuestion
-      ));
+      maxRawRiskScore += getMaxScoreForQuestion(
+        currentQuestion as QuestionSelectBase
+      );
     } else if (currentQuestionType === 3) {
       mitigationScore += getValue(survey.data[name]);
-      maxMitigationScore += getMaxScoreForQuestion(<QuestionSelectBase>(
-        currentQuestion
-      ));
+      maxMitigationScore += getMaxScoreForQuestion(
+        currentQuestion as QuestionSelectBase
+      );
     }
   });
 
+  let total = 0;
+  const percentage = 0.8;
+  const deduction = 0.15;
   //maxMitigationScore is divided by 2 because of Design/Implementation fork
   if (mitigationScore >= percentage * (maxMitigationScore / 2)) {
     total = Math.round((1 - deduction) * rawRiskScore);
@@ -164,6 +159,10 @@ function calculateFinalScore(
     total = rawRiskScore;
   }
 
+  let level = 0;
+  const threshold1 = 0.25;
+  const threshold2 = 0.5;
+  const threshold3 = 0.75;
   if (total <= maxRawRiskScore * threshold1) {
     level = 1;
   } else if (
@@ -231,13 +230,13 @@ const store: StoreOptions<RootState> = {
     resultDataSections: state => {
       if (state.result === undefined) return {};
 
-      var projectResults: any[] = [];
-      var riskResults: any[] = [];
-      var mitigationResults: any[] = [];
-      var mitigationResultsYes: any[] = [];
+      const projectResults: any[] = [];
+      const riskResults: any[] = [];
+      const mitigationResults: any[] = [];
+      const mitigationResultsYes: any[] = [];
 
       state.answerData.forEach(function(result) {
-        var question = state.result!.getQuestionByName(result.name);
+        const question = state.result!.getQuestionByName(result.name);
         const scoreType = getScoreType(question);
 
         if (

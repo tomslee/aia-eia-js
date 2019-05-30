@@ -2,7 +2,12 @@ import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import VuexPersistence from "vuex-persist";
 import { RootState } from "./types";
-import { IQuestion, QuestionSelectBase, SurveyModel } from "survey-vue";
+import {
+  IQuestion,
+  QuestionSelectBase,
+  SurveyModel,
+  ItemValue
+} from "survey-vue";
 import isEmpty from "lodash.isempty";
 
 Vue.use(Vuex);
@@ -102,22 +107,14 @@ function getScoreType(question: IQuestion): Number {
   return parentResult;
 }
 
+import _ from "lodash";
 function getMaxScoreForQuestion(question: QuestionSelectBase): number {
   const questionType = question.getType();
   let maxScore = 0;
-  let value = 0;
   if (questionType == "radiogroup" || questionType == "dropdown") {
-    question.choices.forEach(item => {
-      value = getValue(item.itemValue);
-      if (maxScore < value) {
-        maxScore = value;
-      }
-    });
+    maxScore = _.maxBy(question.choices, value => getValue(value.itemValue));
   } else if (questionType == "checkbox") {
-    question.choices.forEach(item => {
-      value = getValue(item.itemValue);
-      maxScore += value;
-    });
+    maxScore = _.sumBy(question.choices, value => getValue(value.itemValue));
   }
 
   return maxScore;

@@ -112,7 +112,10 @@ function getMaxScoreForQuestion(question: QuestionSelectBase): number {
   const questionType = question.getType();
   let maxScore = 0;
   if (questionType == "radiogroup" || questionType == "dropdown") {
-    maxScore = _.maxBy(question.choices, value => getValue(value.itemValue));
+    const maxScoreChoice = _.maxBy(question.choices, value =>
+      getValue(value.itemValue)
+    );
+    maxScore = getValue(maxScoreChoice.value);
   } else if (questionType == "checkbox") {
     maxScore = _.sumBy(question.choices, value => getValue(value.itemValue));
   }

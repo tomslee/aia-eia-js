@@ -140,6 +140,7 @@ function calculateFinalScore(
   let threshold2 = 0.5;
   let threshold3 = 0.75;
 
+  // Questin types: 1 - Not Scored, 2 - Raw Score, 3 - Mitigation Score
   questionNames.forEach(name => {
     var currentQuestion = survey.getQuestionByName(name);
     var currentQuestionType = getScoreType(currentQuestion);

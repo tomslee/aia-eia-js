@@ -2,7 +2,7 @@
   <div class="home">
     <h1>{{ $t("appTitle") }}</h1>
     <p>
-      <a href="https://github.com/canada-ca/aia-eia-js">{{
+      <a target="_blank" href="https://jam4.sapjam.com/groups/keCuBI5DeVY8ywOSb8UHHa/overview_page/laJtW0SzVbERXAqH5Y4EET">{{
         $t("linkProjectText")
       }}</a>
     </p>
